@@ -1,0 +1,116 @@
+import { useDispatch, useSelector } from "react-redux";
+import { removeItemFromCart, clearCart } from "../redux/CartSlice";
+import { RootState } from "../redux/store";
+import {
+  CardContent,
+  IconButton,
+  Typography,
+  Grid,
+  Box,
+  Button,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { styled } from "@mui/material/styles";
+
+// Styled components
+const CartBox = styled(Box)({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  flexDirection: "column",
+});
+
+const StyledCard = styled("div")({
+  margin: "10px",
+  border: "1px solid #ddd",
+  borderRadius: "8px",
+  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+  padding: "10px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  width: "50%",
+});
+
+const StyledImage = styled("img")({
+  width: "100%",
+  height: "auto",
+  borderRadius: "8px 8px 0 0",
+});
+
+const CartComponent = () => {
+  const dispatch = useDispatch();
+  const currentUser = useSelector(
+    (state: RootState) => state.users.currentUser
+  ); // Get the current logged-in user
+  const cartItems = useSelector((state: RootState) => {
+    const userId = currentUser?.id;
+    return userId ? state.carts.userCarts[userId] || [] : [];
+  }); // Get the current user's cart items
+
+  const handleRemoveFromCart = (itemId: number) => {
+    if (!currentUser) {
+      return; // Handle the case when currentUser is null
+    }
+
+    dispatch(removeItemFromCart({ userId: currentUser.id, itemId }));
+  };
+
+  const handleClearCart = () => {
+    if (!currentUser) {
+      return; // Handle the case when currentUser is null
+    }
+
+    dispatch(clearCart({ userId: currentUser.id }));
+  };
+
+  return (
+    <CartBox>
+      <Typography variant="h4" gutterBottom>
+        Your Cart
+      </Typography>
+      {cartItems.map((cartItem) => (
+        <StyledCard key={cartItem.id}>
+          <Grid container spacing={2}>
+            <Grid item md={4}>
+              <StyledImage
+                src={cartItem.image}
+                alt={cartItem.name}
+                height="200"
+              />
+            </Grid>
+            <Grid item md={8}>
+              <CardContent>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ textAlign: "left" }}
+                >
+                  <Typography variant="h5">{cartItem.name}</Typography>
+                  <IconButton
+                    onClick={() => handleRemoveFromCart(cartItem.id)}
+                    aria-label="close"
+                    sx={{ marginLeft: "auto" }} // Ensure icon is on the right
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+                <Typography variant="body1" className="fw-bold">
+                  ${cartItem.price}
+                </Typography>
+              </CardContent>
+            </Grid>
+          </Grid>
+        </StyledCard>
+      ))}
+
+      {/* Clear Cart Button */}
+      <Button variant="contained" color="secondary" onClick={handleClearCart}>
+        Clear Cart
+      </Button>
+    </CartBox>
+  );
+};
+
+export default CartComponent;

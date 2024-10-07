@@ -13,6 +13,7 @@ const HeroContainer = styled(Box)({
   width: "100%", // Set width to 100% to cover the entire viewport
   margin: 0,
   padding: 0,
+  overflowX: "hidden", // Prevents overflow causing horizontal scroll
 });
 
 const Overlay = styled(Box)({

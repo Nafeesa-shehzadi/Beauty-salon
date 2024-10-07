@@ -3,6 +3,9 @@ import { Typography, Container, Button, Box, Paper } from "@mui/material";
 import UserTable from "../components/Dashboard/Usertable";
 import Booking from "../components/Dashboard/Bookings";
 import { styled } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../redux/userSlice";
 
 // Styled components
 const StyledBackground = styled("div")(() => ({
@@ -62,6 +65,8 @@ const StyledButton = styled(Button)(() => ({
 const AdminDashboard: React.FC = () => {
   const [view, setView] = useState<"users" | "bookings" | null>(null);
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const handleViewUsers = () => {
     setView("users");
   };
@@ -69,12 +74,34 @@ const AdminDashboard: React.FC = () => {
   const handleViewBookings = () => {
     setView("bookings");
   };
-
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    navigate("/login");
+  };
   return (
     <StyledBackground>
-      <Title variant="h4" align="center">
-        Admin Dashboard
-      </Title>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 2,
+          marginLeft: 70,
+          marginRight: 5,
+          padding: "10px 20px",
+        }}
+      >
+        <Title variant="h4" align="center">
+          Admin Dashboard
+        </Title>
+        <StyledButton
+          variant="contained"
+          color="primary"
+          onClick={handleLogout}
+        >
+          Logout
+        </StyledButton>
+      </Box>
 
       <Box display="flex" justifyContent="center" gap={2} marginY={2}>
         <StyledButton

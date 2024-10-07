@@ -9,13 +9,12 @@ import {
   MenuItem,
   Select,
   Snackbar, // Import Snackbar
+  Alert, // Import Alert
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../redux/store";
 import { addMessage } from "../redux/messageSlice";
-import toast from "react-hot-toast";
-
 const ContactContainer = styled(Box)({
   display: "flex",
   flexDirection: "column",
@@ -23,12 +22,15 @@ const ContactContainer = styled(Box)({
   width: "100%",
 });
 
-const InfoItem = styled(Box)({
+const InfoItem = styled(Box)(() => ({
   textAlign: "center",
-  gap: "20px",
-  border: "10px",
-  borderColor: "Highlight",
-});
+  gap: "30px",
+  border: "5px solid pink", // Added pink border
+  borderRadius: "10px", // Optional: adds rounded corners
+  flex: "1", // Make all boxes equal width
+  minWidth: "250px", // Minimum width for boxes
+  alignContent: "center",
+}));
 
 const ImageItem = styled("img")({
   width: "50%",
@@ -56,11 +58,12 @@ const FormContainer = styled("form")({
 const ContactBox = styled(Box)({
   display: "flex",
   justifyContent: "space-between",
-  gap: "12px",
+  gap: "40px",
   height: "20vh",
   width: "100%",
   paddingLeft: "15rem",
   paddingRight: "15rem",
+  marginBottom: "5rem",
 });
 
 const Contactimg = styled(Box)({
@@ -82,6 +85,7 @@ const FormFields = styled(Box)({
 const StyledTextField = styled(TextField)({
   width: "100%",
   marginBottom: "16px",
+  gap: "16px",
 });
 
 const StyledButton = styled(Button)({
@@ -105,30 +109,60 @@ const Contact: React.FC = () => {
   const [desc, setDesc] = useState<string>("");
   const [snackbarOpen, setSnackbarOpen] = useState(false); // State for snackbar
   const dispatch: AppDispatch = useDispatch();
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
 
   // Generate a unique id for each new message/booking
   const generateId = () => Math.floor(Math.random() * 1000000);
   const services = useSelector((state: RootState) => state.messages.services);
-
+  const currentUser = useSelector(
+    (state: RootState) => state.users.currentUser
+  );
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const currentDate = new Date().toISOString().split("T")[0]; // Get current date
+
+    if (date < currentDate) {
+      setSnackbarMessage("Please select a future date.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    if (persons < 1) {
+      setSnackbarMessage("At least one person must be selected.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
 
     const newId = generateId();
 
     try {
-      dispatch(
-        addMessage({
-          id: newId,
-          name,
-          date,
-          persons,
-          desc,
-          service: service.join(", "),
-        })
-      );
-      toast.success("Message sent successfully");
-
-      // Open the snackbar
+      // Check if currentUser is not null before accessing its properties
+      if (currentUser) {
+        dispatch(
+          addMessage({
+            id: newId,
+            name,
+            date,
+            userId: currentUser.id,
+            persons,
+            desc,
+            service: service.join(", "),
+            email: currentUser.email,
+          })
+        );
+      } else {
+        // Handle the case when currentUser is null
+        console.error("currentUser is null");
+      }
+      setSnackbarMessage("Message sent successfully");
+      setSnackbarSeverity("success");
       setSnackbarOpen(true);
 
       // Clear the form after submission
@@ -138,12 +172,20 @@ const Contact: React.FC = () => {
       setDesc("");
       setService([]);
     } catch (error: any) {
-      toast.error("Failed to send message");
+      setSnackbarMessage("Failed to send message");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false); // Close the snackbar
+  const handleSnackbarClose = (
+    _event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   return (
@@ -209,6 +251,7 @@ const Contact: React.FC = () => {
               value={service}
               onChange={(e) => setService(e.target.value as string[])}
               label="Services"
+              required
             >
               {services.map((serviceItem) => (
                 <MenuItem key={serviceItem.id} value={serviceItem.title}>
@@ -225,21 +268,24 @@ const Contact: React.FC = () => {
       </Contactimg>
 
       {/* Snackbar component to show success message */}
+      {/* Snackbar for success and error messages */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
-        message="Appointment done!"
-        action={
-          <Button color="secondary" size="small" onClick={handleSnackbarClose}>
-            Close
-          </Button>
-        }
         anchorOrigin={{
           vertical: "top",
           horizontal: "right",
         }}
-      />
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </ContactContainer>
   );
 };

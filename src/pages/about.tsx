@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 const StyledContainer = styled(Container)`
   margin-top: 2rem; // Adjust margin as needed
+  overflow: hidden; // Prevent horizontal scroll
 `;
 
 const About: React.FC = () => {

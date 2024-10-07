@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
+import { RootState } from "./store";
 
 interface Booking {
   id: number;
@@ -7,6 +8,8 @@ interface Booking {
   persons: number;
   desc: string;
   service: string;
+  userId: number;
+  email: string; // Add this line
 }
 
 interface Service {
@@ -50,6 +53,8 @@ const messagesSlice = createSlice({
         persons: number;
         desc: string;
         service: string;
+        userId: number; // Add userId to track user who booked the service
+        email: string; // Add email to track user who booked the service
       }>
     ) => {
       state.messages.push(action.payload);
@@ -63,6 +68,8 @@ const messagesSlice = createSlice({
         persons: number;
         desc: string;
         service: string;
+        userId: number; // Update userId when service is updated
+        email: string;
       }>
     ) => {
       const index = state.messages.findIndex(
@@ -82,7 +89,12 @@ const messagesSlice = createSlice({
     },
   },
 });
-
+// Memoized Selector
+export const selectBookingsByUserId = createSelector(
+  (state: RootState) => state.messages.messages,
+  (state: RootState, userId: number) => userId,
+  (messages, userId) => messages.filter((booking) => booking.userId === userId)
+);
 export const { addMessage, updateMessage, deleteMessage, setSearchTerm } =
   messagesSlice.actions;
 

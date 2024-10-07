@@ -67,7 +67,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    if (name === "isAdmin") {
+      setFormData({ ...formData, isAdmin: e.target.checked });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

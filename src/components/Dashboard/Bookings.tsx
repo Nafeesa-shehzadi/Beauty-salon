@@ -91,11 +91,26 @@ const Booking: React.FC = () => {
       service: newBooking.service.join(", "), // Convert array to string
     };
 
-    if (editingMessage !== null) {
-      dispatch(updateMessage(bookingToSave)); // Update booking if in edit mode
-    } else {
-      dispatch(addMessage(bookingToSave)); // Add new booking
-    }
+    if (editingMessage !== null && currentUser) {
+      dispatch(
+        updateMessage({
+          ...bookingToSave,
+          userId: currentUser?.id || 0,
+          email: currentUser.email,
+        })
+      ); // Update booking if in edit mode
+          if (currentUser) {
+            dispatch(
+              updateMessage({
+                ...bookingToSave,
+                userId: currentUser.id || 0,
+                email: currentUser.email,
+              })
+            ); // Update booking if in edit mode
+          } else {
+            // Handle the case when currentUser is null
+            console.error("currentUser is null");
+          }
     handleCloseModal();
   };
 
@@ -148,7 +163,7 @@ const Booking: React.FC = () => {
           {filteredMessages.map((message) => (
             <TableRow key={message.id}>
               <TableCell>{message.name}</TableCell>
-              <TableCell>{currentUser ? currentUser.email : ""}</TableCell>
+              <TableCell>{message.email}</TableCell>
               <TableCell>{message.date}</TableCell>
               <TableCell>{message.persons}</TableCell>
               <TableCell>{message.desc}</TableCell>

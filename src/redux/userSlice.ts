@@ -36,6 +36,9 @@ const userSlice = createSlice({
       );
       if (!existingUser) {
         state.users.push(action.payload); // Add user if they do not exist
+        state.filteredUsers = state.users.filter((user) =>
+          user.username.toLowerCase().includes(state.searchTerm.toLowerCase())
+        );
       } else {
         console.error("User already exists!"); // Log the message but do not add the user
       }
@@ -79,6 +82,7 @@ const userSlice = createSlice({
         user.isAdmin = isAdmin; // Update user admin status
       }
     },
+
     deleteUser(state, action: PayloadAction<number>) {
       state.users = state.users.filter((user) => user.id !== action.payload); // Delete user by ID
     },

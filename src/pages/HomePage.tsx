@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "../redux/userSlice";
 import { Button, Typography, Box } from "@mui/material";
@@ -11,6 +11,7 @@ import About from "./about";
 import Services from "./Services";
 import Contact from "./Contact";
 import { styled } from "@mui/material/styles";
+import ImageCarousel from "./ImageCrousal";
 
 // Global Reset CSS for Body and Box Sizing
 const GlobalStyles = styled("div")({
@@ -74,6 +75,9 @@ const HomePage: React.FC = () => {
   );
   const navigate = useNavigate();
 
+  // State to manage cart count
+  const [cartCount, setCartCount] = useState(0);
+
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate("/login");
@@ -96,7 +100,7 @@ const HomePage: React.FC = () => {
               profileImage: currentUser.profileImage || "",
             }}
           />
-        )}{" "}
+        )}
         <HeroSection />
         {isAuthenticated && currentUser && (
           <>
@@ -114,6 +118,9 @@ const HomePage: React.FC = () => {
               </section>
               <section id="services">
                 <Services />
+              </section>
+              <section id="buy">
+                <ImageCarousel /> {/* Pass setCartCount */}
               </section>
               <section id="contact">
                 <Contact />

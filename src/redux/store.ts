@@ -3,6 +3,7 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import userReducer from "./userSlice";
 import messageReducer from "./messageSlice";
+import cartReducer from "./CartSlice";
 
 // Persistence configuration
 const persistConfig = {
@@ -13,11 +14,13 @@ const persistConfig = {
 // Create persisted reducers for both users and messages
 const persistedUserReducer = persistReducer(persistConfig, userReducer);
 const persistedMessageReducer = persistReducer(persistConfig, messageReducer);
+const persistedCartReducer = persistReducer(persistConfig, cartReducer);
 
 const store = configureStore({
   reducer: {
     users: persistedUserReducer,
     messages: persistedMessageReducer, // Now this reducer is also persisted
+    carts: persistedCartReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

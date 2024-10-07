@@ -11,7 +11,6 @@ import {
 import { styled } from "@mui/system";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import Notfound from "./Notfound";
 
 // Styled components using MUI's styled
 
@@ -22,6 +21,7 @@ const ServiceBox = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
   padding: theme.spacing(5),
   backgroundColor: "ButtonShadow",
+  overflow: "hidden",
 }));
 const ServiceCard = styled(Card)(({ theme }) => ({
   position: "relative",

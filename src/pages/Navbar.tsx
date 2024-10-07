@@ -8,13 +8,18 @@ import {
   Button,
   Avatar,
   Input,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { scroller } from "react-scroll";
 import { styled } from "@mui/material/styles";
-import EditIcon from "@mui/icons-material/Edit"; // Import EditIcon for editing profile image
-import { useDispatch } from "react-redux";
-import { updateProfileImage } from "../redux/userSlice"; // Import the action
+import EditIcon from "@mui/icons-material/Edit";
+import { useDispatch, useSelector } from "react-redux";
+import { updateProfileImage } from "../redux/userSlice";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { useNavigate } from "react-router-dom";
+import { RootState } from "../redux/store"; // Import the RootState type
 
 const Logo = styled("img")({
   width: "100px",
@@ -22,9 +27,10 @@ const Logo = styled("img")({
 });
 
 const NavbarContainer = styled(AppBar)({
-  backgroundColor: "#f8c5da", // Light pink background
+  backgroundColor: "#f8c5da",
   position: "sticky",
-  color: "white", // Ensure all text inside is white
+  color: "white",
+  overflowX: "hidden", // Prevent horizontal scroll
 });
 
 const NavLinks = styled(Box)<{ show: boolean }>(({ show }) => ({
@@ -37,34 +43,49 @@ const NavLinks = styled(Box)<{ show: boolean }>(({ show }) => ({
 const StyledButton = styled(Button)({
   fontWeight: "bold",
   marginLeft: "10px",
-  color: "white", // Button text color
+  color: "white",
 });
 
 const AvatarContainer = styled(Box)({
-  position: "relative", // Required for positioning the edit icon
+  position: "relative",
 });
 
 const EditIconStyled = styled(EditIcon)({
-  position: "absolute", // Position the edit icon absolutely
+  position: "absolute",
   bottom: 0,
   right: 0,
-  backgroundColor: "black", // Background color for better visibility
+  backgroundColor: "black",
   borderRadius: "50%",
   cursor: "pointer",
   "&:hover": {
-    opacity: 0.8, // Slightly dim on hover
+    opacity: 0.8,
   },
 });
 
 const Navbar: React.FC<{
-  currentUser?: { username: string; profileImage: string; id: number }; // Include user ID
+  currentUser?: { username: string; profileImage: string; id: number };
 }> = ({ currentUser }) => {
-  const dispatch = useDispatch(); // Initialize useDispatch
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [show, setShow] = useState(false);
-  const [hovered, setHovered] = useState(false); // State to manage hover
+  const [hovered, setHovered] = useState(false);
   const [profileImage, setProfileImage] = useState(
     currentUser?.profileImage || ""
-  ); // Local state for image
+  );
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // State for menu anchor
+
+  // Fetch the cart items for the logged-in user from the Redux store
+  const cartItems = useSelector((state: RootState) => {
+    const userId = currentUser?.id;
+    return userId ? state.carts.userCarts[userId] || [] : [];
+  });
+
+  // Calculate the cart count
+  const cartCount = cartItems.length;
+
+  const handleCartClick = () => {
+    navigate("/cartitems");
+  };
 
   const handleNavigation = (section: string) => {
     scroller.scrollTo(section, {
@@ -80,18 +101,38 @@ const Navbar: React.FC<{
     if (file && currentUser) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Dispatch the updateProfileImage action with the new image URL
         dispatch(
           updateProfileImage({
             id: currentUser.id,
             newImage: reader.result as string,
           })
         );
-        // Update local state to re-render the avatar
         setProfileImage(reader.result as string);
       };
-      reader.readAsDataURL(file); // Read the uploaded image file as a data URL
+      reader.readAsDataURL(file);
     }
+  };
+
+  // Menu item click handlers
+  const handleEditProfile = () => {
+    // Add functionality to edit profile
+    console.log("Edit Profile");
+    setAnchorEl(null); // Close the menu
+  };
+
+  const handleBookings = () => {
+    // Add functionality to view bookings
+    console.log("Bookings");
+    setAnchorEl(null); // Close the
+    if (currentUser) {
+      navigate(`/userbookings/${currentUser.id}`); // Pass userId in the URL
+    }
+  };
+
+  const handleLogout = () => {
+    // Add functionality for logout
+    console.log("Logout");
+    setAnchorEl(null); // Close the menu
   };
 
   return (
@@ -104,7 +145,7 @@ const Navbar: React.FC<{
             style={{
               marginLeft: "13px",
               fontWeight: "bolder",
-              color: "white", // Ensure the logo text is white
+              color: "white",
             }}
           >
             Glamour
@@ -124,12 +165,21 @@ const Navbar: React.FC<{
           <StyledButton onClick={() => handleNavigation("contact")}>
             CONTACT
           </StyledButton>
+          <StyledButton onClick={() => handleNavigation("buy")}>
+            BUY HERE
+          </StyledButton>
+          <StyledButton
+            onClick={handleCartClick}
+            startIcon={<ShoppingCartIcon />}
+          >
+            ({cartCount}) {/* Show the cart count */}
+          </StyledButton>
         </NavLinks>
 
         <IconButton
           edge="end"
           onClick={() => setShow(!show)}
-          style={{ marginLeft: "auto", color: "white" }} // Hamburger icon in white
+          style={{ marginLeft: "auto", color: "white" }}
         >
           <GiHamburgerMenu />
         </IconButton>
@@ -141,8 +191,9 @@ const Navbar: React.FC<{
           >
             <Avatar
               alt={currentUser.username}
-              src={profileImage} // Use local state for image
-              style={{ marginLeft: "10px" }} // Space between menu icon and avatar
+              src={profileImage}
+              style={{ marginLeft: "10px" }}
+              onClick={(event) => setAnchorEl(event.currentTarget)} // Open menu on avatar click
             />
             {hovered && (
               <>
@@ -150,16 +201,16 @@ const Navbar: React.FC<{
                   type="file"
                   inputProps={{ accept: "image/*" }}
                   onChange={handleImageUpload}
-                  style={{ display: "none" }} // Hide the input
+                  style={{ display: "none" }}
                   id="file-input"
                 />
                 <label htmlFor="file-input">
                   <EditIconStyled
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevents the label from triggering the file input again
+                      e.stopPropagation();
                       const input = document.getElementById("file-input");
                       if (input) {
-                        input.click(); // Programmatically click the input
+                        input.click();
                       }
                     }}
                   />
@@ -168,6 +219,17 @@ const Navbar: React.FC<{
             )}
           </AvatarContainer>
         )}
+
+        {/* Dropdown Menu */}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+        >
+          <MenuItem onClick={handleEditProfile}>Edit Profile</MenuItem>
+          <MenuItem onClick={handleBookings}>Bookings</MenuItem>
+          <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        </Menu>
       </Toolbar>
     </NavbarContainer>
   );

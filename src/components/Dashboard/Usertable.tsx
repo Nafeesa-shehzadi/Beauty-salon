@@ -41,6 +41,7 @@ const UserTable: React.FC = () => {
   const filteredUsers = useSelector(
     (state: RootState) => state.users.filteredUsers
   );
+
   const searchTerm = useSelector((state: RootState) => state.users.searchTerm);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -82,7 +83,7 @@ const UserTable: React.FC = () => {
 
   const handleToggleAdmin = (user: User) => {
     const newIsAdmin = !user.isAdmin; // Toggle isAdmin status
-    dispatch(updateUserRole({ userId: user.id, isAdmin: newIsAdmin })); // Update in Redux store
+    dispatch(updateUserRole({ userId: user.id, isAdmin: newIsAdmin })); // Update Redux store
   };
 
   const handleSnackbarClose = () => {
@@ -136,8 +137,8 @@ const UserTable: React.FC = () => {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={user.isAdmin}
-                        onChange={() => handleToggleAdmin(user)}
+                        checked={user.isAdmin} // This should reflect the current isAdmin state
+                        onChange={() => handleToggleAdmin(user)} // This toggles the state
                         color="primary"
                       />
                     }
