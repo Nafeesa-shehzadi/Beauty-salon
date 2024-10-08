@@ -99,18 +99,15 @@ const Booking: React.FC = () => {
           email: currentUser.email,
         })
       ); // Update booking if in edit mode
-          if (currentUser) {
-            dispatch(
-              updateMessage({
-                ...bookingToSave,
-                userId: currentUser.id || 0,
-                email: currentUser.email,
-              })
-            ); // Update booking if in edit mode
-          } else {
-            // Handle the case when currentUser is null
-            console.error("currentUser is null");
-          }
+    } else {
+      dispatch(
+        addMessage({
+          ...bookingToSave,
+          userId: currentUser?.id || 0,
+          email: currentUser.email,
+        })
+      ); // Add new booking
+    }
     handleCloseModal();
   };
 
@@ -269,5 +266,4 @@ const Booking: React.FC = () => {
     </Container>
   );
 };
-
 export default Booking;

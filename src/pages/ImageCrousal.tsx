@@ -5,12 +5,17 @@ import {
   Typography,
   IconButton,
   Button,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
 } from "@mui/material";
-import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import styled from "@emotion/styled";
+import { ArrowBackIos, ArrowForwardIos, Search } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { addItemToCart } from "../redux/CartSlice"; // Import your action
 import { RootState } from "../redux/store";
+import { styled } from "@mui/material/styles"; // Import styled from MUI
+
 interface MakeupProduct {
   id: number;
   name: string;
@@ -18,61 +23,90 @@ interface MakeupProduct {
   price: number;
 }
 
-const CarouselContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: white;
-  background-color: #b08097;
-  padding: 20px;
-  overflow: hidden;
-`;
+const CarouselContainer = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  color: "white",
+  overflow: "hidden",
+  width: "100%",
+  height: "110vh",
+  padding: "20px",
+  position: "relative",
+});
 
-const ImageContainer = styled.div`
-  width: 500px;
-  height: 300px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin: 20px;
-  border-radius: 10px;
-  transition: background-color 0.3s ease;
-  &:hover {
-    background-color: #a74275;
-  }
-  cursor: pointer;
-  padding: 20px;
-  gap: 20px;
-`;
+const ImgSection = styled(Box)(() => ({
+  backgroundImage: `url("/carsel.jpg")`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  display: "flex",
+  alignItems: "center",
+  width: "100%",
+  zIndex: -1,
+  flexDirection: "column",
+  minHeight: "400px",
+  gap: "20px",
+}));
 
-const Image = styled.img`
-  width: 50%;
-  height: 50%;
-  border-radius: 10px;
-  max-width: 100%;
-  max-height: 100%;
-`;
+const CardContainer = styled(Card)({
+  width: "300px",
+  margin: "20px",
+  height: "400px",
+  backgroundColor: "#fff", // Card background
+  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+  transition: "transform 0.2s",
+  position: "relative", // Set position to relative
+  top: "-110px", // Move card up to overlap the ImgSection
+  "&:hover": {
+    transform: "scale(1.05)", // Slight zoom effect
+  },
+  color: "#000",
+});
 
-const DotsContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-`;
+const Image = styled("img")({
+  width: "100%",
+  height: "200px",
+  borderRadius: "10px",
+});
 
-const Dot = styled.span<{ isActive: boolean }>`
-  height: 10px;
-  width: 10px;
-  margin: 0 5px;
-  border-radius: 50%;
-  background-color: ${(props) => (props.isActive ? "#da5e9c" : "#ddd")};
-  transition: background-color 0.3s ease;
-`;
+const DotsContainer = styled("div")({
+  display: "flex",
+  justifyContent: "center",
+  marginTop: "10px",
+});
+
+const Dot = styled("span")<{ isActive: boolean }>(({ isActive }) => ({
+  height: "20px",
+  width: "20px",
+  margin: "0 5px",
+  borderRadius: "50%",
+  backgroundColor: isActive ? "#da5e9c" : "#ddd",
+  transition: "background-color 0.3s ease",
+}));
+
+const SearchBox = styled(TextField)(({ theme }) => ({
+  marginBottom: "20px",
+  width: "500px",
+  padding: "5px",
+  borderRadius: "8px",
+  backgroundColor: theme.palette.mode === "dark" ? "#333" : "#fff", // Dark background for dark theme
+  "& .MuiInputBase-input": {
+    color: theme.palette.mode === "dark" ? "#fff" : "#000", // White text for dark theme, black for light
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: theme.palette.mode === "dark" ? "#777" : "#ddd", // Darker border in dark theme
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: theme.palette.secondary.main, // Border color on hover
+  },
+}));
 
 const ImageCarousel: React.FC = () => {
   const [products, setProducts] = useState<MakeupProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<MakeupProduct[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const dispatch = useDispatch(); // Initialize dispatch
   const currentUser = useSelector(
     (state: RootState) => state.users.currentUser
@@ -88,6 +122,7 @@ const ImageCarousel: React.FC = () => {
         const data = await response.json();
         const imageLinks = data.slice(0, 20); // Limit to 20 products
         setProducts(imageLinks);
+        setFilteredProducts(imageLinks); // Initialize filtered products
         setLoading(false);
       } catch (error) {
         console.error("Error fetching makeup products:", error);
@@ -97,69 +132,130 @@ const ImageCarousel: React.FC = () => {
     fetchProducts();
   }, []);
 
+  const handleSearch = () => {
+    if (searchTerm) {
+      const filtered = products.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+      setCurrentIndex(Math.max(0, Math.floor(filtered.length / 2))); // Center the displayed item
+    } else {
+      setFilteredProducts(products);
+      setCurrentIndex(0); // Reset to first item
+    }
+  };
+
   const handlePrevious = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? products.length - 1 : prevIndex - 1
+      prevIndex === 0 ? Math.max(filteredProducts.length - 3, 0) : prevIndex - 1
     );
   };
 
   const handleNext = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === products.length - 1 ? 0 : prevIndex + 1
+      prevIndex + 3 >= filteredProducts.length ? 0 : prevIndex + 1
     );
   };
 
-  const addToCart = () => {
+  const addToCart = (product: MakeupProduct) => {
     if (!currentUser) {
       alert("Please login to add items to cart");
       return;
     }
+
     const productToAdd = {
-      id: products[currentIndex].id,
-      name: products[currentIndex].name,
-      price: products[currentIndex].price,
-      image: products[currentIndex].image_link,
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image_link,
       quantity: 1, // Default quantity
     };
 
     dispatch(addItemToCart({ userId: currentUser.id, item: productToAdd })); // Dispatch add item to cart
-    alert(`${products[currentIndex].name} added to cart!`); // Optional: alert message
+    alert(`${product.name} added to cart!`); // Optional: alert message
   };
 
   if (loading) {
     return <CircularProgress />;
   }
 
-  if (!products.length) {
+  if (!filteredProducts.length) {
     return <p>No products found</p>;
   }
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value); // Update the state correctly
+  };
+
   return (
     <CarouselContainer>
-      <Box textAlign="center" mt={4} mb={4}>
-        <Typography variant="h2">What We Sell</Typography>
+      <Box
+        sx={{
+          width: "100%",
+        }}
+      >
+        <ImgSection>
+          <Typography variant="h2">Welcome to Makeup Studio!</Typography>
+          <Typography variant="h4">What We Sell</Typography>
+          <SearchBox
+            type="search"
+            label="Search for products..."
+            value={searchTerm}
+            onChange={handleChange}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+            InputProps={{
+              endAdornment: (
+                <IconButton onClick={handleSearch}>
+                  <Search />
+                </IconButton>
+              ),
+            }}
+          />
+          <Button>About</Button>
+        </ImgSection>
       </Box>
-      <ImageContainer>
-        <Image
-          src={products[currentIndex].image_link}
-          alt={products[currentIndex].name}
-        />
-        <Typography variant="h6">
-          Name: {products[currentIndex].name}
-        </Typography>
-        <Typography variant="h6">
-          Price: ${products[currentIndex].price}
-        </Typography>
-        <Button variant="contained" color="primary" onClick={addToCart}>
-          Add to Cart
-        </Button>
-      </ImageContainer>
 
-      {/* Navigation Icons */}
-      <Box display="flex" alignItems="center">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        sx={{ height: "40vh" }}
+      >
         <IconButton onClick={handlePrevious}>
           <ArrowBackIos />
         </IconButton>
+
+        {/* Displaying three products at a time */}
+        <Grid container spacing={2} justifyContent="center">
+          {filteredProducts
+            .slice(currentIndex, currentIndex + 3)
+            .map((product) => (
+              <Grid item xs={12} sm={4} key={product.id}>
+                <CardContainer>
+                  <Image src={product.image_link} alt={product.name} />
+                  <CardContent>
+                    <Typography variant="h6">{product.name}</Typography>
+                    <Typography variant="h6">
+                      Price: ${product.price}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => addToCart(product)}
+                      fullWidth
+                    >
+                      Add to Cart
+                    </Button>
+                  </CardContent>
+                </CardContainer>
+              </Grid>
+            ))}
+        </Grid>
+
         <IconButton onClick={handleNext}>
           <ArrowForwardIos />
         </IconButton>
@@ -167,7 +263,7 @@ const ImageCarousel: React.FC = () => {
 
       {/* Dots below the carousel */}
       <DotsContainer>
-        {products.map((_, index) => (
+        {filteredProducts.map((_, index) => (
           <Dot key={index} isActive={index === currentIndex} />
         ))}
       </DotsContainer>

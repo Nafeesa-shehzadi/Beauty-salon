@@ -20,9 +20,9 @@ const ServiceBox = styled(Box)(({ theme }) => ({
   justifyContent: "space-around",
   gap: theme.spacing(2),
   padding: theme.spacing(5),
-  backgroundColor: "ButtonShadow",
   overflow: "hidden",
 }));
+
 const ServiceCard = styled(Card)(({ theme }) => ({
   position: "relative",
   cursor: "pointer",
@@ -48,6 +48,10 @@ const ServiceCardContent = styled(CardContent)(() => ({
   textAlign: "center",
 }));
 
+const HeadingTypography = styled(Typography)(({ theme }) => ({
+  color: theme.palette.text.primary, // This will adapt to light or dark mode
+}));
+
 const Services: React.FC = () => {
   // Use Redux to get services from the store
   const services = useSelector((state: RootState) => state.messages.services);
@@ -55,9 +59,10 @@ const Services: React.FC = () => {
   return (
     <ServiceBox>
       <Box textAlign="center" mb={4}>
-        <Typography variant="h3" gutterBottom>
+        {/* Use the styled HeadingTypography component */}
+        <HeadingTypography variant="h3" gutterBottom>
           Our Services
-        </Typography>
+        </HeadingTypography>
       </Box>
       <Grid container spacing={2} justifyContent="center">
         {services.map((service) => (

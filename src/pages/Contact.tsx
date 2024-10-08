@@ -19,7 +19,7 @@ const ContactContainer = styled(Box)({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  width: "100%",
+  maxWidth: "100%",
 });
 
 const InfoItem = styled(Box)(() => ({
@@ -53,9 +53,10 @@ const FormContainer = styled("form")({
   marginLeft: "1rem",
   marginBottom: "16px",
   marginRight: "5rem",
+  color: "#000",
 });
 
-const ContactBox = styled(Box)({
+const ContactBox = styled(Box)(() => ({
   display: "flex",
   justifyContent: "space-between",
   gap: "40px",
@@ -64,7 +65,7 @@ const ContactBox = styled(Box)({
   paddingLeft: "15rem",
   paddingRight: "15rem",
   marginBottom: "5rem",
-});
+}));
 
 const Contactimg = styled(Box)({
   display: "flex",
@@ -82,11 +83,61 @@ const FormFields = styled(Box)({
   width: "100%",
 });
 
-const StyledTextField = styled(TextField)({
+const StyledTextField = styled(TextField)(({ theme }) => ({
   width: "100%",
   marginBottom: "16px",
-  gap: "16px",
-});
+  "& .MuiInputBase-input": {
+    color: "#000", // Input text color (black for white background)
+  },
+  "& .MuiInputLabel-root": {
+    color: "#000", // Label text color (black for white background)
+  },
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": {
+      borderColor: "#000", // Border color (black)
+    },
+    "&:hover fieldset": {
+      borderColor: theme.palette.secondary.main, // Border color on hover
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: theme.palette.secondary.main, // Border color when focused
+    },
+  },
+}));
+
+const StyledSelect = styled(Select)(({ theme }) => ({
+  width: "100%",
+  marginBottom: "16px",
+  "& .MuiInputBase-input": {
+    color: "#000", // Text color for the select field (black)
+  },
+  "& .MuiInputLabel-root": {
+    color: "#000", // Label text color (black)
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#000", // Border color (black)
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: theme.palette.secondary.main, // Border color on hover
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: theme.palette.secondary.main, // Border color when focused
+  },
+}));
+
+const StyledFormControl = styled(FormControl)(({ theme }) => ({
+  width: "100%",
+  marginBottom: "16px",
+  "& .MuiInputLabel-root": {
+    color: "#000", // Label text color (black)
+  },
+  "& .MuiSelect-select": {
+    color: "#000", // Select field text color (black)
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#000", // Border color (black)
+  },
+}));
 
 const StyledButton = styled(Button)({
   marginTop: "3rem",
@@ -244,9 +295,9 @@ const Contact: React.FC = () => {
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
           />
-          <FormControl fullWidth>
+          <StyledFormControl fullWidth>
             <InputLabel>Services</InputLabel>
-            <Select
+            <StyledSelect
               multiple
               value={service}
               onChange={(e) => setService(e.target.value as string[])}
@@ -258,8 +309,8 @@ const Contact: React.FC = () => {
                   {serviceItem.title}
                 </MenuItem>
               ))}
-            </Select>
-          </FormControl>
+            </StyledSelect>
+          </StyledFormControl>
 
           <StyledButton type="submit" variant="contained" color="primary">
             Send

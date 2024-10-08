@@ -10,7 +10,7 @@ const HeroContainer = styled(Box)({
   height: "100vh",
   position: "relative",
   display: "flex",
-  width: "100%", // Set width to 100% to cover the entire viewport
+  maxWidth: "100%", // Set width to 100% to cover the entire viewport
   margin: 0,
   padding: 0,
   overflowX: "hidden", // Prevents overflow causing horizontal scroll
